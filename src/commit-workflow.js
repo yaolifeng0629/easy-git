@@ -4,10 +4,12 @@ const COMMIT_AND_PUSH = 'commit-and-push';
 const COMMIT_ONLY = 'commit-only';
 const CANCEL = 'cancel';
 
-export async function runCommitWorkflow({ git, ui }) {
+export async function runCommitWorkflow({ git, ui, options = {} }) {
     try {
-        ui.showGuide();
-        ui.showFormatReference();
+        if (!options.message) {
+            ui.showGuide();
+            ui.showFormatReference();
+        }
 
         if (!git.isRepository()) {
             ui.error('The current directory is not a git repository');
@@ -26,7 +28,7 @@ export async function runCommitWorkflow({ git, ui }) {
         }
 
         const changedFiles = git.listChangedFiles();
-        const message = await ui.askCommitMessage();
+        const message = options.message ?? await ui.askCommitMessage();
         const validation = validateCommitMessage(message);
 
         if (!validation.valid) {
@@ -42,7 +44,7 @@ export async function runCommitWorkflow({ git, ui }) {
             files: changedFiles
         });
 
-        const action = await ui.askCommitAction();
+        const action = options.action ?? await ui.askCommitAction();
 
         if (action === CANCEL) {
             ui.warn('Commit cancelled.');

@@ -184,7 +184,7 @@ export function createCli({
 
     return {
         showGuide() {
-            writeLine(output, chalk.bold('easy-commit-util'));
+            writeLine(output, chalk.bold('commitgo'));
             writeLine(output);
             writeLine(output, `Types: ${chalk.gray(formatCommitGuide())}`);
         },

@@ -5,6 +5,7 @@ import { validateCommitMessage, formatCommitGuide } from '../src/commit-message.
 import { runCommitWorkflow } from '../src/commit-workflow.js';
 import { createGitAdapter } from '../src/git.js';
 import { canUseInteractiveSelect, selectActionWithKeyboard } from '../src/cli.js';
+import { parseCliArgs } from '../src/args.js';
 
 const tests = [];
 
@@ -186,6 +187,32 @@ test('workflow previews changes before asking whether to continue', async () => 
     );
 });
 
+test('workflow can use shortcut message and action without prompting', async () => {
+    const git = createFakeGit();
+    const ui = createUi();
+
+    const result = await runCommitWorkflow({
+        git,
+        ui,
+        options: {
+            message: 'feat: add shortcut flags',
+            action: 'commit-only'
+        }
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.pushed, false);
+    assert.equal(ui.calls.some(([name]) => name === 'askCommitMessage'), false);
+    assert.equal(ui.calls.some(([name]) => name === 'askCommitAction'), false);
+    assert.deepEqual(git.calls, [
+        ['isRepository'],
+        ['hasChanges'],
+        ['listChangedFiles'],
+        ['addAll'],
+        ['commit', 'feat: add shortcut flags']
+    ]);
+});
+
 test('workflow adds, commits, reads branch, and pushes in order', async () => {
     const git = createFakeGit({ branch: 'feature/test' });
     const ui = createUi({ message: 'feat: add tests' });
@@ -303,6 +330,29 @@ test('interactive action selection uses arrow keys and enter', async () => {
 test('interactive action selection only runs in a TTY', () => {
     assert.equal(canUseInteractiveSelect({ isTTY: true, setRawMode() {} }, { isTTY: true }), true);
     assert.equal(canUseInteractiveSelect({ isTTY: false, setRawMode() {} }, { isTTY: true }), false);
+});
+
+test('cli args parse shortcut message and push flags', () => {
+    assert.deepEqual(parseCliArgs(['-m', 'feat: add flags', '--no-push']), {
+        ok: true,
+        options: {
+            message: 'feat: add flags',
+            action: 'commit-only'
+        }
+    });
+    assert.deepEqual(parseCliArgs(['--message=fix: push safely', '--push']), {
+        ok: true,
+        options: {
+            message: 'fix: push safely',
+            action: 'commit-and-push'
+        }
+    });
+});
+
+test('cli args reject missing values and conflicting push flags', () => {
+    assert.equal(parseCliArgs(['--message']).ok, false);
+    assert.equal(parseCliArgs(['--push', '--no-push']).ok, false);
+    assert.equal(parseCliArgs(['--wat']).ok, false);
 });
 
 let failures = 0;

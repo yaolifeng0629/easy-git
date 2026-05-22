@@ -1,6 +1,6 @@
-<h1 style="text-align: center;">easy-commit-util</h1>
+<h1 style="text-align: center;">commitgo</h1>
 <p style="text-align: center;"><span> English | <a href= "./README.zh.md"> 中文 </a></span></p>
-<p style="text-align: center;">easy-commit-util 是一个使用 Node.js 编写的命令行工具，它可以简化和自动化你的 git 提交过程。</p>
+<p style="text-align: center;">commitgo 是一个使用 Node.js 编写的命令行工具，它可以简化和自动化你的 git 提交过程。</p>
 
 <p style="display: flex; justify-content: center; align-item: center;">
 <img src="./screenzy.png" width="70%"/>
@@ -19,16 +19,20 @@
 ## 🚀 使用方法
 1.  全局安装
 ```bash
-pnpm install -g easy-commit-util
+pnpm install -g commitgo
 
-npm install -g easy-commit-util
+npm install -g commitgo
 ```
 2.  在终端中运行
 ```bash
-easy-commit-util
+commitgo
 
 # 输入commit信息
 # 回车即可
+
+# 快捷参数
+commitgo -m "feat: add shortcut flags" --no-push
+commitgo --message "fix: push safely" --push
 
 # Tips:
 # 命令行输入 easy 按 Tab 键即可自动补全，不需要手动敲名字
@@ -40,10 +44,10 @@ easy-commit-util
 
 ## 🙌 贡献
 
--   我们欢迎所有的贡献和建议。如果你想为 easy-commit-util 做出贡献，你可以：
+-   我们欢迎所有的贡献和建议。如果你想为 commitgo 做出贡献，你可以：
 
     -   提交 bug 报告或建议
     -   提交代码改进或新功能
     -   改进文档
 
--   感谢所有已经为 easy-commit-util 做出贡献的人！🎉
+-   感谢所有已经为 commitgo 做出贡献的人！🎉

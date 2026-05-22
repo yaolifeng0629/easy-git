@@ -1,6 +1,6 @@
-<h1 style="text-align: center;">easy-commit-util</h1>
+<h1 style="text-align: center;">commitgo</h1>
 <p style="text-align: center;"><span> English | <a href= "./README.zh.md"> 中文 </a></span></p>
-<p style="text-align: center;">easy-commit-util is a command-line tool written in Node.js that simplifies and automates your git submission process.</p>
+<p style="text-align: center;">commitgo is a command-line tool written in Node.js that simplifies and automates your git submission process.</p>
 
 <p style="display: flex; justify-content: center; align-items: center;">
 <img src="./screenzy.png" width="70%"/>
@@ -19,16 +19,20 @@
 ## 🚀 Usage
 1.  global installation
 ```bash
-pnpm install -g easy-commit-util
+pnpm install -g commitgo
 
-npm install -g easy-commit-util
+npm install -g commitgo
 ```
 2. open a terminal
 ```bash
-easy-commit-util
+commitgo
 
 # Enter commit information
 # Enter
+
+# Shortcut options
+commitgo -m "feat: add shortcut flags" --no-push
+commitgo --message "fix: push safely" --push
 
 # Tips:
 # Command line input easy Press Tab key to complete automatically, no need to manually type the name

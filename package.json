@@ -1,8 +1,10 @@
 {
-    "name": "easy-commit-util",
+    "name": "commitgo",
     "version": "0.0.1",
-    "description": "easy-commit-util is a command-line tool written in Node.js that simplifies and automates your git submission process.",
-    "bin": "./index.js",
+    "description": "commitgo is a command-line tool written in Node.js that simplifies and automates your git submission process.",
+    "bin": {
+        "commitgo": "./index.js"
+    },
     "main": "index.js",
     "scripts": {
         "start": "node index.js",
