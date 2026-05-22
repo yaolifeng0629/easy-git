@@ -1,53 +1,114 @@
-<h1 style="text-align: center;">commitgo</h1>
-<p style="text-align: center;"><span> English | <a href= "./README.zh.md"> 中文 </a></span></p>
-<p style="text-align: center;">commitgo is a command-line tool written in Node.js that simplifies and automates your git submission process.</p>
+# commitgo
 
-<p style="display: flex; justify-content: center; align-items: center;">
-<img src="./screenzy.png" width="70%"/>
-</p>
+commitgo is a small CLI tool for people who want to commit safely without typing the same Git commands every time.
 
->
->   `If you don't want to force verification of submission format, please install version@1.1.6, otherwise, install version@1.1.6 or above`
->
+It checks your repository, validates the commit message, previews changed files, and lets you choose whether to push.
 
-## Function
+![commitgo workflow](./assets/commitgo-workflow.svg)
 
--   Automatically detect if the current directory is a git repository
--   If it is a git warehouse, you will be prompted to enter a submission message
--   Automatically execute `git add.`、`Git commit - m "<message>" ` and `git push` commands
+## Features
 
-## 🚀 Usage
-1.  global installation
+- Preview changed files before committing
+- Validate commit messages with Conventional Commits
+- Choose between commit + push, commit only, or cancel
+- Use keyboard selection in an interactive terminal
+- Use shortcut flags for faster commits
+- Pass commit messages safely without shell string interpolation
+
+## Install
+
 ```bash
-pnpm install -g commitgo
-
 npm install -g commitgo
 ```
-2. open a terminal
+
+or:
+
 ```bash
-commitgo
-
-# Enter commit information
-# Enter
-
-# Shortcut options
-commitgo -m "feat: add shortcut flags" --no-push
-commitgo --message "fix: push safely" --push
-
-# Tips:
-# Command line input easy Press Tab key to complete automatically, no need to manually type the name
+pnpm install -g commitgo
 ```
 
-## ⚠️ Precautions
+## Usage
 
--   Ensure that Node.js and git are installed on your machine
--   Ensure that you have configured the correct remote warehouse in the git repository
+Run commitgo in a Git repository:
 
-## 🙌 contribution
+```bash
+commitgo
+```
 
--   We welcome all contributions and suggestions. If you want to contribute to Delete Repository, you can:
-    -   submit bug reports or recommendations
-    -   submit code improvements or new features
-    -   improve documentation
+You will be asked for a commit message, then commitgo will show the files that are about to be committed.
 
--   thanks to all those who have contributed to Delete Repository! 🎉
+```text
+commitgo
+
+Types: feat, fix, docs, release, style, workflow, types, ci, revert, wip, build, perf, dx, chore, refactor, test
+Format: type(scope): message
+
+Message:
+  > feat: add shortcut flags
+
+Message
+  feat: add shortcut flags
+
+Files
+  M  src/main.js
+  M  src/commit-workflow.js
+  A  src/args.js
+
+Action
+  > commit + push
+    commit only
+    cancel
+```
+
+## Shortcut Flags
+
+Skip the message prompt:
+
+```bash
+commitgo -m "feat: add shortcut flags"
+```
+
+Commit without pushing:
+
+```bash
+commitgo -m "feat: add shortcut flags" --no-push
+```
+
+Commit and push directly:
+
+```bash
+commitgo --message "fix: push safely" --push
+```
+
+## Commit Message Format
+
+commitgo accepts these commit types:
+
+```text
+feat, fix, docs, release, style, workflow, types, ci, revert, wip, build, perf, dx, chore, refactor, test
+```
+
+Examples:
+
+```bash
+feat: add shortcut flags
+fix(cli): handle invalid action
+docs: rewrite readme
+```
+
+## Requirements
+
+- Node.js 14 or newer
+- Git
+- A Git repository with a remote configured if you want to push
+
+## Development
+
+```bash
+pnpm install
+pnpm test
+```
+
+## License
+
+ISC

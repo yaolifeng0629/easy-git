@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="58%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#e0f2fe"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-18%" y="-18%" width="136%" height="136%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#background)"/>
+  <path d="M0 790 C260 720 380 840 610 760 C850 675 1010 720 1210 790 C1370 846 1490 830 1600 770 L1600 900 L0 900 Z" fill="#dbeafe" opacity="0.55"/>
+
+  <g transform="translate(96 64)">
+    <text class="eyebrow" x="0" y="0">CLI TOOL</text>
+    <text class="title" x="0" y="78">commitgo</text>
+    <text class="subtitle" x="0" y="124">Preview files. Pick an action. Commit with confidence.</text>
+  </g>
+
+  <g filter="url(#soft-shadow)">
+    <rect class="terminal" x="96" y="236" width="910" height="538" rx="22"/>
+    <rect class="terminal-bar" x="96" y="236" width="910" height="56" rx="22"/>
+    <rect x="96" y="270" width="910" height="22" fill="#1e293b"/>
+    <circle cx="132" cy="264" r="8" fill="#fb7185"/>
+    <circle cx="160" cy="264" r="8" fill="#facc15"/>
+    <circle cx="188" cy="264" r="8" fill="#4ade80"/>
+    <text class="terminal-name" x="944" y="272">commitgo</text>
+    <text class="terminal-prompt" x="128" y="292">$ commitgo -m &quot;feat: add shortcut flags&quot;</text>
+<text class="terminal-muted" x="128" y="322"></text>
+<text class="terminal-label" x="128" y="352">Message</text>
+<text class="terminal-text" x="128" y="382">  feat: add shortcut flags</text>
+<text class="terminal-muted" x="128" y="412"></text>
+<text class="terminal-label" x="128" y="442">Files</text>
+<text class="terminal-file" x="128" y="472">  M  src/main.js</text>
+<text class="terminal-file" x="128" y="502">  M  src/commit-workflow.js</text>
+<text class="terminal-file" x="128" y="532">  A  src/args.js</text>
+<text class="terminal-muted" x="128" y="562"></text>
+<text class="terminal-label" x="128" y="592">Action</text>
+<text class="terminal-selected" x="128" y="622">  &gt; commit + push</text>
+<text class="terminal-text" x="128" y="652">    commit only</text>
+<text class="terminal-text" x="128" y="682">    cancel</text>
+  </g>
+
+  <g transform="translate(1082 236)">
+    <rect class="feature-card" x="0" y="0" width="410" height="118" rx="20"/>
+    <text class="feature-title" x="30" y="44">Safer by default</text>
+    <text class="feature-copy" x="30" y="78">Preview before Git writes anything.</text>
+
+    <rect class="feature-card" x="0" y="158" width="410" height="118" rx="20"/>
+    <text class="feature-title" x="30" y="202">Fast when needed</text>
+    <text class="feature-copy" x="30" y="236">Use -m, --push, and --no-push.</text>
+
+    <rect class="feature-card" x="0" y="316" width="410" height="118" rx="20"/>
+    <text class="feature-title" x="30" y="360">Simple choices</text>
+    <text class="feature-copy" x="30" y="394">Commit + push, commit only, or cancel.</text>
+  </g>
+
+  <g transform="translate(1082 704)">
+    <rect x="0" y="0" width="410" height="70" rx="18" fill="#0f172a"/>
+    <text class="install" x="30" y="44">npm install -g commitgo</text>
+  </g>
+
+  <style>
+    text { font-family: Inter, Segoe UI, Arial, sans-serif; letter-spacing: 0; }
+    .eyebrow { fill: #2563eb; font-size: 22px; font-weight: 800; letter-spacing: 4px; }
+    .title { fill: #0f172a; font-size: 86px; font-weight: 850; }
+    .subtitle { fill: #475569; font-size: 30px; font-weight: 500; }
+    .terminal { fill: #0f172a; }
+    .terminal-bar { fill: #1e293b; }
+    .terminal-name { fill: #94a3b8; font-size: 18px; font-weight: 700; text-anchor: end; }
+    .terminal-prompt { fill: #93c5fd; font: 23px ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 700; }
+    .terminal-muted { fill: #64748b; font: 23px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .terminal-label { fill: #f8fafc; font: 25px ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 800; }
+    .terminal-text { fill: #cbd5e1; font: 23px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .terminal-file { fill: #86efac; font: 23px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .terminal-selected { fill: #fef08a; font: 23px ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 800; }
+    .feature-card { fill: #ffffff; opacity: 0.96; }
+    .feature-title { fill: #0f172a; font-size: 25px; font-weight: 800; }
+    .feature-copy { fill: #475569; font-size: 19px; font-weight: 500; }
+    .install { fill: #dbeafe; font: 22px ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 800; }
+  </style>
+</svg>
