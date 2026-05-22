@@ -5,7 +5,8 @@
     "bin": "./index.js",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js"
+        "start": "node index.js",
+        "test": "node scripts/run-tests.js"
     },
     "keywords": [
         "github",
