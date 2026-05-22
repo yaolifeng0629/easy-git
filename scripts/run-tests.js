@@ -9,7 +9,10 @@ function test(name, fn) {
     tests.push({ name, fn });
 }
 
-function createUi(message = 'feat: add tests') {
+function createUi({
+    message = 'feat: add tests',
+    action = 'commit-and-push'
+} = {}) {
     const calls = [];
 
     return {
@@ -23,6 +26,13 @@ function createUi(message = 'feat: add tests') {
         askCommitMessage() {
             calls.push(['askCommitMessage']);
             return Promise.resolve(message);
+        },
+        showCommitPreview(value) {
+            calls.push(['showCommitPreview', value]);
+        },
+        askCommitAction() {
+            calls.push(['askCommitAction']);
+            return Promise.resolve(action);
         },
         invalidCommitMessage(value) {
             calls.push(['invalidCommitMessage', value]);
@@ -42,6 +52,7 @@ function createUi(message = 'feat: add tests') {
 function createFakeGit({
     isRepository = true,
     hasChanges = true,
+    changedFiles = ['M  index.js'],
     branch = 'main',
     failOn = ''
 } = {}) {
@@ -64,6 +75,10 @@ function createFakeGit({
         hasChanges() {
             calls.push(['hasChanges']);
             return hasChanges;
+        },
+        listChangedFiles() {
+            calls.push(['listChangedFiles']);
+            return changedFiles;
         },
         addAll() {
             maybeFail('addAll');
@@ -134,27 +149,53 @@ test('workflow stops before prompting when there are no changes', async () => {
 
 test('workflow stops before git writes when commit message is invalid', async () => {
     const git = createFakeGit();
-    const ui = createUi('bad message');
+    const ui = createUi({ message: 'bad message' });
 
     const result = await runCommitWorkflow({ git, ui });
 
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'invalid-format');
-    assert.deepEqual(git.calls, [['isRepository'], ['hasChanges']]);
+    assert.deepEqual(git.calls, [['isRepository'], ['hasChanges'], ['listChangedFiles']]);
     assert.equal(ui.calls.some(([name]) => name === 'invalidCommitMessage'), true);
+    assert.equal(ui.calls.some(([name]) => name === 'askCommitAction'), false);
+});
+
+test('workflow previews changes before asking whether to continue', async () => {
+    const git = createFakeGit({
+        changedFiles: ['M  index.js', 'A  src/git.js']
+    });
+    const ui = createUi();
+
+    const result = await runCommitWorkflow({ git, ui });
+    const preview = ui.calls.find(([name]) => name === 'showCommitPreview');
+
+    assert.equal(result.ok, true);
+    assert.deepEqual(preview, [
+        'showCommitPreview',
+        {
+            message: 'feat: add tests',
+            files: ['M  index.js', 'A  src/git.js']
+        }
+    ]);
+    assert.ok(
+        ui.calls.findIndex(([name]) => name === 'showCommitPreview') <
+            ui.calls.findIndex(([name]) => name === 'askCommitAction')
+    );
 });
 
 test('workflow adds, commits, reads branch, and pushes in order', async () => {
     const git = createFakeGit({ branch: 'feature/test' });
-    const ui = createUi('feat: add tests');
+    const ui = createUi({ message: 'feat: add tests' });
 
     const result = await runCommitWorkflow({ git, ui });
 
     assert.equal(result.ok, true);
+    assert.equal(result.pushed, true);
     assert.equal(result.branch, 'feature/test');
     assert.deepEqual(git.calls, [
         ['isRepository'],
         ['hasChanges'],
+        ['listChangedFiles'],
         ['addAll'],
         ['commit', 'feat: add tests'],
         ['getCurrentBranch'],
@@ -163,9 +204,43 @@ test('workflow adds, commits, reads branch, and pushes in order', async () => {
     assert.equal(ui.calls.some(([name]) => name === 'success'), true);
 });
 
+test('workflow can commit without pushing', async () => {
+    const git = createFakeGit();
+    const ui = createUi({
+        message: 'feat: add tests',
+        action: 'commit-only'
+    });
+
+    const result = await runCommitWorkflow({ git, ui });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.pushed, false);
+    assert.deepEqual(git.calls, [
+        ['isRepository'],
+        ['hasChanges'],
+        ['listChangedFiles'],
+        ['addAll'],
+        ['commit', 'feat: add tests']
+    ]);
+});
+
+test('workflow can cancel before writing git changes', async () => {
+    const git = createFakeGit();
+    const ui = createUi({
+        message: 'feat: add tests',
+        action: 'cancel'
+    });
+
+    const result = await runCommitWorkflow({ git, ui });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'cancelled');
+    assert.deepEqual(git.calls, [['isRepository'], ['hasChanges'], ['listChangedFiles']]);
+});
+
 test('workflow reports git failures without continuing to push', async () => {
     const git = createFakeGit({ failOn: 'commit' });
-    const ui = createUi('feat: add tests');
+    const ui = createUi({ message: 'feat: add tests' });
 
     const result = await runCommitWorkflow({ git, ui });
 

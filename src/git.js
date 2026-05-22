@@ -32,6 +32,13 @@ export function createGitAdapter({ runGit = defaultRunGit } = {}) {
             return runGit(['status', '--porcelain']).trim().length > 0;
         },
 
+        listChangedFiles() {
+            return runGit(['status', '--short'])
+                .split('\n')
+                .map(line => line.trim())
+                .filter(Boolean);
+        },
+
         getCurrentBranch() {
             return runGit(['branch', '--show-current']).trim();
         },
