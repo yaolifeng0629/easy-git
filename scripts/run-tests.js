@@ -119,8 +119,16 @@ test('commit message rejects unsupported formats', () => {
 test('commit guide is generated from the shared commit type list', () => {
     const guide = formatCommitGuide();
 
-    assert.match(guide, /1\. feat/);
-    assert.match(guide, /16\. test/);
+    assert.deepEqual(guide[0], {
+        index: 1,
+        type: 'feat',
+        description: '新功能'
+    });
+    assert.deepEqual(guide[15], {
+        index: 16,
+        type: 'test',
+        description: '增加测试，包括单元测试、集成测试等'
+    });
 });
 
 test('workflow stops before prompting when current directory is not a git repository', async () => {
