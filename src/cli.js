@@ -62,6 +62,7 @@ export function selectActionWithKeyboard({ input, output }) {
     readlineCb.emitKeypressEvents(input);
 
     const previousRawMode = input.isRaw;
+    const wasPaused = input.isPaused?.() ?? false;
     let selectedIndex = 0;
     let renderedLines = renderActionChoices(output, selectedIndex);
 
@@ -72,6 +73,11 @@ export function selectActionWithKeyboard({ input, output }) {
         function cleanup() {
             input.off('keypress', onKeypress);
             input.setRawMode(Boolean(previousRawMode));
+
+            if (wasPaused && typeof input.pause === 'function') {
+                input.pause();
+            }
+
             writeLine(output);
         }
 

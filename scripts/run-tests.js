@@ -312,10 +312,17 @@ test('interactive action selection uses arrow keys and enter', async () => {
     input.isTTY = true;
     output.isTTY = true;
     input.isRaw = false;
+    input.paused = true;
+    input.isPaused = () => input.paused;
     input.setRawMode = value => {
         input.isRaw = value;
     };
-    input.resume = () => {};
+    input.resume = () => {
+        input.paused = false;
+    };
+    input.pause = () => {
+        input.paused = true;
+    };
 
     const selection = selectActionWithKeyboard({ input, output });
 
@@ -324,6 +331,7 @@ test('interactive action selection uses arrow keys and enter', async () => {
 
     assert.equal(await selection, 'commit-only');
     assert.equal(input.isRaw, false);
+    assert.equal(input.paused, true);
     assert.equal(outputChunks.join('').includes('Use up/down and Enter'), true);
 });
 

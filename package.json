@@ -1,6 +1,6 @@
 {
     "name": "commitgo",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "commitgo is a command-line tool written in Node.js that simplifies and automates your git submission process.",
     "bin": {
         "commitgo": "./index.js"
