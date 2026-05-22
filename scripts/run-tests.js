@@ -1,7 +1,10 @@
 import assert from 'assert/strict';
+import { EventEmitter } from 'events';
+import { Writable } from 'stream';
 import { validateCommitMessage, formatCommitGuide } from '../src/commit-message.js';
 import { runCommitWorkflow } from '../src/commit-workflow.js';
 import { createGitAdapter } from '../src/git.js';
+import { canUseInteractiveSelect, selectActionWithKeyboard } from '../src/cli.js';
 
 const tests = [];
 
@@ -119,16 +122,8 @@ test('commit message rejects unsupported formats', () => {
 test('commit guide is generated from the shared commit type list', () => {
     const guide = formatCommitGuide();
 
-    assert.deepEqual(guide[0], {
-        index: 1,
-        type: 'feat',
-        description: '新功能'
-    });
-    assert.deepEqual(guide[15], {
-        index: 16,
-        type: 'test',
-        description: '增加测试，包括单元测试、集成测试等'
-    });
+    assert.match(guide, /^feat, fix, docs/);
+    assert.match(guide, /refactor, test$/);
 });
 
 test('workflow stops before prompting when current directory is not a git repository', async () => {
@@ -275,6 +270,39 @@ test('git adapter passes commit messages as arguments instead of shell text', ()
             options: { stdio: 'inherit' }
         }
     ]);
+});
+
+test('interactive action selection uses arrow keys and enter', async () => {
+    const input = new EventEmitter();
+    const outputChunks = [];
+    const output = new Writable({
+        write(chunk, _encoding, callback) {
+            outputChunks.push(chunk.toString());
+            callback();
+        }
+    });
+
+    input.isTTY = true;
+    output.isTTY = true;
+    input.isRaw = false;
+    input.setRawMode = value => {
+        input.isRaw = value;
+    };
+    input.resume = () => {};
+
+    const selection = selectActionWithKeyboard({ input, output });
+
+    input.emit('keypress', '', { name: 'down' });
+    input.emit('keypress', '', { name: 'return' });
+
+    assert.equal(await selection, 'commit-only');
+    assert.equal(input.isRaw, false);
+    assert.equal(outputChunks.join('').includes('Use up/down and Enter'), true);
+});
+
+test('interactive action selection only runs in a TTY', () => {
+    assert.equal(canUseInteractiveSelect({ isTTY: true, setRawMode() {} }, { isTTY: true }), true);
+    assert.equal(canUseInteractiveSelect({ isTTY: false, setRawMode() {} }, { isTTY: true }), false);
 });
 
 let failures = 0;

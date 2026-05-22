@@ -1,20 +1,9 @@
 import readlineCb from 'readline';
 import chalk from 'chalk';
-import boxen from 'boxen';
-import Table from 'cli-table3';
 import { formatCommitGuide, formatInvalidCommitMessage } from './commit-message.js';
 
 function writeLine(stream, message = '') {
     stream.write(`${message}\n`);
-}
-
-function createBox(content, options = {}) {
-    return boxen(content, {
-        padding: 1,
-        borderColor: 'cyanBright',
-        borderStyle: 'round',
-        ...options
-    });
 }
 
 function formatFileStatus(file) {
@@ -27,14 +16,97 @@ function formatFileStatus(file) {
     };
 }
 
-function formatActionLabel(action) {
-    const labels = {
-        '1': ['Commit and push', '提交后立即推送到当前分支'],
-        '2': ['Commit only', '只生成本地提交，不推送'],
-        '3': ['Cancel', '取消本次操作，不改动仓库']
-    };
+const ACTION_CHOICES = [
+    {
+        value: 'commit-and-push',
+        label: 'commit + push'
+    },
+    {
+        value: 'commit-only',
+        label: 'commit only'
+    },
+    {
+        value: 'cancel',
+        label: 'cancel'
+    }
+];
 
-    return labels[action];
+export function canUseInteractiveSelect(input, output) {
+    return Boolean(input.isTTY && output.isTTY && typeof input.setRawMode === 'function');
+}
+
+function renderActionChoices(output, selectedIndex) {
+    const lines = [
+        chalk.bold('Action'),
+        ...ACTION_CHOICES.map((choice, index) => {
+            const marker = index === selectedIndex ? '>' : ' ';
+            const label = index === selectedIndex ? chalk.cyan(choice.label) : choice.label;
+
+            return `  ${marker} ${label}`;
+        }),
+        '',
+        chalk.gray('Use up/down and Enter')
+    ];
+
+    writeLine(output, lines.join('\n'));
+
+    return lines.length;
+}
+
+function moveCursorToMenuStart(output, lineCount) {
+    output.write(`\x1b[${lineCount}A`);
+    output.write('\x1b[0J');
+}
+
+export function selectActionWithKeyboard({ input, output }) {
+    readlineCb.emitKeypressEvents(input);
+
+    const previousRawMode = input.isRaw;
+    let selectedIndex = 0;
+    let renderedLines = renderActionChoices(output, selectedIndex);
+
+    input.setRawMode(true);
+    input.resume();
+
+    return new Promise(resolve => {
+        function cleanup() {
+            input.off('keypress', onKeypress);
+            input.setRawMode(Boolean(previousRawMode));
+            writeLine(output);
+        }
+
+        function updateSelection(nextIndex) {
+            selectedIndex = (nextIndex + ACTION_CHOICES.length) % ACTION_CHOICES.length;
+            moveCursorToMenuStart(output, renderedLines);
+            renderedLines = renderActionChoices(output, selectedIndex);
+        }
+
+        function onKeypress(_text, key = {}) {
+            if (key.name === 'up') {
+                updateSelection(selectedIndex - 1);
+                return;
+            }
+
+            if (key.name === 'down') {
+                updateSelection(selectedIndex + 1);
+                return;
+            }
+
+            if (key.name === 'return' || key.name === 'enter') {
+                const action = ACTION_CHOICES[selectedIndex].value;
+                cleanup();
+                resolve(action);
+                return;
+            }
+
+            if (key.name === 'escape' || (key.ctrl && key.name === 'c')) {
+                cleanup();
+                resolve('cancel');
+            }
+        }
+
+        input.on('keypress', onKeypress);
+    });
 }
 
 function createLineReader({ input, output }) {
@@ -112,34 +184,9 @@ export function createCli({
 
     return {
         showGuide() {
-            const guideTable = new Table({
-                head: [chalk.cyan('#'), chalk.cyan('Type'), chalk.cyan('Use for')],
-                colWidths: [5, 14, 34],
-                wordWrap: true,
-                style: {
-                    head: [],
-                    border: ['gray']
-                }
-            });
-
-            for (const item of formatCommitGuide()) {
-                guideTable.push([
-                    chalk.gray(String(item.index)),
-                    chalk.green(item.type),
-                    item.description
-                ]);
-            }
-
-            writeLine(
-                output,
-                createBox(`${chalk.bold('easy-commit-util')}\n${chalk.gray('Commit with preview and safer push control.')}`, {
-                    title: 'READY',
-                    titleAlignment: 'center'
-                })
-            );
+            writeLine(output, chalk.bold('easy-commit-util'));
             writeLine(output);
-            writeLine(output, chalk.bold('Commit types'));
-            writeLine(output, guideTable.toString());
+            writeLine(output, `Types: ${chalk.gray(formatCommitGuide())}`);
         },
 
         showFormatReference() {
@@ -151,74 +198,48 @@ export function createCli({
         },
 
         askCommitMessage() {
-            return lineReader.ask(chalk.bold('Commit message') + chalk.gray(' > '));
+            writeLine(output, chalk.bold('Message:'));
+            return lineReader.ask(chalk.gray('  > '));
         },
 
         showCommitPreview({ message, files }) {
-            const filesTable = new Table({
-                head: [chalk.cyan('Status'), chalk.cyan('File')],
-                colWidths: [10, 54],
-                wordWrap: true,
-                style: {
-                    head: [],
-                    border: ['gray']
-                }
-            });
+            writeLine(output);
+            writeLine(output, chalk.bold('Message'));
+            writeLine(output, `  ${chalk.gray(message)}`);
+            writeLine(output);
+            writeLine(output, chalk.bold('Files'));
 
             for (const file of files) {
                 const { status, name } = formatFileStatus(file);
-                filesTable.push([chalk.yellow(status), name]);
+                writeLine(output, `  ${chalk.yellow(status.padEnd(2))} ${name}`);
             }
-
-            writeLine(output);
-            writeLine(
-                output,
-                createBox(
-                    `${chalk.bold('Message')}\n${message}\n\n${chalk.bold('Files')}\n${filesTable.toString()}`,
-                    {
-                        title: 'PREVIEW',
-                        titleAlignment: 'center',
-                        borderColor: 'yellow'
-                    }
-                )
-            );
         },
 
         async askCommitAction() {
-            const actionTable = new Table({
-                colWidths: [8, 22, 34],
-                wordWrap: true,
-                style: {
-                    border: ['gray']
-                }
-            });
+            writeLine(output);
 
-            for (const key of ['1', '2', '3']) {
-                const [label, description] = formatActionLabel(key);
-                actionTable.push([chalk.cyan(key), chalk.bold(label), chalk.gray(description)]);
+            if (canUseInteractiveSelect(input, output)) {
+                lineReader.close();
+                return selectActionWithKeyboard({ input, output });
             }
 
-            writeLine(output);
-            writeLine(output, chalk.bold('Next step'));
-            writeLine(output, actionTable.toString());
+            writeLine(output, chalk.bold('Action'));
+            ACTION_CHOICES.forEach((choice, index) => {
+                writeLine(output, `  ${chalk.cyan(String(index + 1))} ${choice.label}`);
+            });
+            writeLine(output, chalk.gray('> '));
 
             while (true) {
-                const answer = await lineReader.ask(chalk.bold('Select') + chalk.gray(' [1/2/3] > '));
+                const answer = await lineReader.ask('');
 
                 if (answer === null) {
                     return 'cancel';
                 }
 
-                if (answer === '1') {
-                    return 'commit-and-push';
-                }
+                const selectedChoice = ACTION_CHOICES[Number(answer) - 1];
 
-                if (answer === '2') {
-                    return 'commit-only';
-                }
-
-                if (answer === '3') {
-                    return 'cancel';
+                if (selectedChoice) {
+                    return selectedChoice.value;
                 }
 
                 writeLine(output, chalk.yellow('Please choose 1, 2, or 3.'));

@@ -36,11 +36,7 @@ export function validateCommitMessage(message) {
 }
 
 export function formatCommitGuide() {
-    return COMMIT_TYPES.map(([type, description], index) => ({
-        index: index + 1,
-        type,
-        description
-    }));
+    return COMMIT_TYPES.map(([type]) => type).join(', ');
 }
 
 export function formatInvalidCommitMessage(message, chalk) {
